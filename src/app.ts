@@ -233,15 +233,15 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements 
 class ProjectList extends Component<HTMLDivElement, HTMLElement> implements DragTarget {
   assignedProjects: Project[]
 
-  constructor(private type: "active" | "finished") {
-    super("project-list", "app", false, `${type}-projects`)
+  constructor(private ulType: "active" | "finished") {
+    super("project-list", "app", false, `${ulType}-projects`)
     this.assignedProjects = []
     this.configure()
     this.renderContent()
   }
 
   private renderProjects() {
-    const ulEl = document.getElementById(`${this.type}-project-list`)! as HTMLUListElement
+    const ulEl = document.getElementById(`${this.ulType}-project-list`)! as HTMLUListElement
     //clear <ul> content before add new one
     ulEl.innerHTML = ""
     for (const projectItem of this.assignedProjects) {
@@ -264,7 +264,8 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
   dropHandler(event: DragEvent) {
     //.getData("type") => data from .setData("type", id)
     const prjId = event.dataTransfer!.getData("text/plain")
-    appState.switchProjectStatus(prjId, this.type === "active" ? ProjectStatus.Active : ProjectStatus.Finished)
+    //switch projectStatus depend of a droppable area name, where this project is dropped
+    appState.switchProjectStatus(prjId, this.ulType === "active" ? ProjectStatus.Active : ProjectStatus.Finished)
   }
 
   @BindThis
@@ -281,7 +282,7 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
     //add listener function to the appState
     appState.addListener((listOfProjects: Project[]) => {
       this.assignedProjects = listOfProjects.filter(p => {
-        if (this.type === "active") {
+        if (this.ulType === "active") {
           return p.status === ProjectStatus.Active
         }
         return p.status === ProjectStatus.Finished
@@ -291,9 +292,9 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
   }
 
   renderContent() {
-    const ulId = `${this.type}-project-list`
+    const ulId = `${this.ulType}-project-list`
     this.element.querySelector("ul")!.id = ulId
-    this.element.querySelector("h2")!.textContent = `${this.type.toUpperCase()} PROJECTS`
+    this.element.querySelector("h2")!.textContent = `${this.ulType.toUpperCase()} PROJECTS`
   }
 }
 
