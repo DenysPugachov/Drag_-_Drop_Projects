@@ -8,6 +8,18 @@ interface Validatable {
   maxNumber?: number
 }
 
+interface Draggable {
+  dragStartHandler(event: DragEvent): void
+  dragEndHandler(event: DragEvent): void
+}
+
+
+interface DragTarget {
+  dragOverHandler(event: DragEvent): void
+  dropHandler(event: DragEvent): void
+  dragLeaveHandler(event: DragEvent): void
+}
+
 
 function validateUserInput(validatableInput: Validatable) {
   let isValid = true
@@ -161,7 +173,7 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 
 
 //class responsible to render single project item
-class ProjectItem extends Component<HTMLUListElement, HTMLLIElement>{
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements Draggable {
   //store project obj inside this class
   public project: Project
 
@@ -182,7 +194,22 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement>{
     this.renderContent()
   }
 
-  configure() { }
+  @BindThis
+  dragStartHandler(event: DragEvent) {
+    //catch plain/text from darg obj
+    event.dataTransfer!.setData("text/plain", this.project.id)
+    //planing to move brag obj
+    // event.dataTransfer!.effectAllowed = "move"
+  }
+
+  dragEndHandler(_: DragEvent) {
+    console.log("Drag End, item is dropped!");
+  }
+
+  configure() {
+    this.element.addEventListener("dragstart", this.dragStartHandler)
+    this.element.addEventListener("dragend", this.dragEndHandler)
+  }
 
   renderContent() {
     this.element.querySelector("h2")!.textContent = this.project.title
@@ -193,7 +220,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement>{
 
 
 //Project list class
-class ProjectList extends Component<HTMLDivElement, HTMLElement>{
+class ProjectList extends Component<HTMLDivElement, HTMLElement> implements DragTarget {
   assignedProjects: Project[]
 
   constructor(private type: "active" | "finished") {
@@ -212,7 +239,33 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement>{
     }
   }
 
+  @BindThis
+  dragOverHandler(event: DragEvent) {
+    //alow drop only obj witch dataTransfer type is "text/plain"
+    if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+      //by default JS is NOT allowing dropping
+      event.preventDefault()
+      const ulEl = this.element.querySelector("ul")!
+      ulEl.classList.add("droppable")
+    }
+  }
+
+  dropHandler(event: DragEvent) {
+    //.getData("type") => data from .setData("type", id)
+    console.log(event.dataTransfer!.getData("text/plain"));
+  }
+
+  @BindThis
+  dragLeaveHandler(_: DragEvent) {
+    const ulEl = this.element.querySelector("ul")!
+    ulEl.classList.remove("droppable")
+  }
+
   configure() {
+    this.element.addEventListener("dragover", this.dragOverHandler)
+    this.element.addEventListener("drop", this.dropHandler)
+    this.element.addEventListener("dragleave", this.dragLeaveHandler)
+
     //add listener function to the appState
     appState.addListener((listOfProjects: Project[]) => {
       this.assignedProjects = listOfProjects.filter(p => {
