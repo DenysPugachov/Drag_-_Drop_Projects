@@ -126,7 +126,18 @@ class AppState extends GeneralState<Project[]> {
       ProjectStatus.Active
     )
     this.projectsArr.push(newProject)
-    //call all listener func whatever something change
+    this.updateListeners()
+  }
+
+  switchProjectStatus(projectId: string, newStatus: ProjectStatus) {
+    //find project with id in projectArr[]
+    const currentProject = this.projectsArr.find(prj => prj.id === projectId)
+    //check if project status change (to avoid rendering)
+    if (currentProject && currentProject.status !== newStatus) { currentProject.status = newStatus }
+    this.updateListeners()
+  }
+
+  private updateListeners() {
     for (const listenerFn of this.listenersArrFn) {
       //execute all functions with a copy([].slice()) of projects[]
       listenerFn(this.projectsArr.slice())
@@ -189,7 +200,6 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements 
   constructor(hostElId: string, project: Project) {
     super("single-project", hostElId, false, project.id)
     this.project = project
-
     this.configure()
     this.renderContent()
   }
@@ -203,7 +213,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements 
   }
 
   dragEndHandler(_: DragEvent) {
-    console.log("Drag End, item is dropped!");
+    console.log("Item dropped!");
   }
 
   configure() {
@@ -250,9 +260,11 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
     }
   }
 
+  @BindThis
   dropHandler(event: DragEvent) {
     //.getData("type") => data from .setData("type", id)
-    console.log(event.dataTransfer!.getData("text/plain"));
+    const prjId = event.dataTransfer!.getData("text/plain")
+    appState.switchProjectStatus(prjId, this.type === "active" ? ProjectStatus.Active : ProjectStatus.Finished)
   }
 
   @BindThis
