@@ -1,36 +1,34 @@
-namespace App {
-  //Base class for Component
-  //'abstract' class => never insatiate this directly, only for inheritance(extend)
-  //Generic types<T,U> =>uses when we want set type form outside (when set this parameters)
-  export abstract class Component<T extends HTMLElement, U extends HTMLElement> {
-    templateEl: HTMLTemplateElement
-    hostEl: T
-    element: U
 
-    constructor(
-      templateId: string,
-      hostElementId: string,
-      insertAfterBegin: boolean,
-      newElementId?: string,
-    ) {
-      this.templateEl = document.getElementById(templateId)! as HTMLTemplateElement
-      this.hostEl = document.getElementById(hostElementId)! as T
+//Base class for Component
+//'abstract' class => never insatiate this directly, only for inheritance(extend)
+//Generic types<T,U> =>uses when we want set type form outside (when set this parameters)
+export abstract class Component<T extends HTMLElement, U extends HTMLElement> {
+  templateEl: HTMLTemplateElement
+  hostEl: T
+  element: U
 
-      const importedNode = document.importNode(this.templateEl.content, true)
-      this.element = importedNode.firstElementChild as U
+  constructor(
+    templateId: string,
+    hostElementId: string,
+    insertAfterBegin: boolean,
+    newElementId?: string,
+  ) {
+    this.templateEl = document.getElementById(templateId)! as HTMLTemplateElement
+    this.hostEl = document.getElementById(hostElementId)! as T
 
-      if (newElementId) this.element.id = newElementId
+    const importedNode = document.importNode(this.templateEl.content, true)
+    this.element = importedNode.firstElementChild as U
 
-      this.attachEl(insertAfterBegin)
-    }
+    if (newElementId) this.element.id = newElementId
 
-    private attachEl(insertAfterBegin: boolean) {
-      this.hostEl.insertAdjacentElement(insertAfterBegin ? "afterbegin" : "beforeend", this.element)
-    }
-
-    //'abstract' method => require to add this method to an instance
-    abstract configure(): void
-    abstract renderContent(): void
+    this.attachEl(insertAfterBegin)
   }
 
+  private attachEl(insertAfterBegin: boolean) {
+    this.hostEl.insertAdjacentElement(insertAfterBegin ? "afterbegin" : "beforeend", this.element)
+  }
+
+  //'abstract' method => require to add this method to an instance
+  abstract configure(): void
+  abstract renderContent(): void
 }
