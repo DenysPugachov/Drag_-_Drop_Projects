@@ -1,7 +1,7 @@
-import { BindThis } from "../decorators/autobind.js"
-import { Draggable } from "../models/drag-drop.js" // extension .js because it pure JS feature!
-import { Project } from "../models/project.js"
-import { Component } from "./base-component.js"
+import { BindThis } from "../decorators/autobind"
+import { Draggable } from "../models/drag-drop"
+import { Project } from "../models/project"
+import { Component } from "./base-component"
 
 
 //class responsible to render single project item

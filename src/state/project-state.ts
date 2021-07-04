@@ -1,4 +1,4 @@
-import { Project, ProjectStatus } from "../models/project.js"
+import { Project, ProjectStatus } from "../models/project"
 
 //abstract class for inherit state
 abstract class GeneralState<U> {
